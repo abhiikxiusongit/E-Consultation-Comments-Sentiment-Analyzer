@@ -204,6 +204,14 @@ This project can be used in:
 
 ---
 
+## Team
+
+- Abhishek Bhardwaj– Backend development, Flask integration, NLP pipeline
+- Harsh Vardhan Pandey – Frontend development, user interface design
+- Sanjay Singh Negi – Testing, documentation, exports, support
+- Kunal Yadav - Backend development,NLP & Data Processing  
+
+---
 
 ## License
 
