@@ -204,25 +204,6 @@ This project can be used in:
 
 ---
 
-## Team
-
-- **Your Name** – Backend development, Flask integration, NLP pipeline
-- **Teammate 1 Name** – Frontend development, user interface design
-- **Teammate 2 Name** – Testing, documentation, exports, support
-
-> Replace the above names with the actual team member names.
-
----
-
-## Contributors
-
-Each team member should:
-- be added as a GitHub collaborator
-- make at least one commit from their own GitHub account
-- be listed in `CONTRIBUTORS.md`
-- mention their role clearly for resume and portfolio use
-
----
 
 ## License
 
