@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Analysis History</h2>
+        
+        {% if analyses %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Session Name</th>
+                                <th>Date</th>
+                                <th>Total Comments</th>
+                                <th>Positive</th>
+                                <th>Neutral</th>
+                                <th>Negative</th>
+                                <th>Avg Sentiment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for analysis in analyses %}
+                            <tr>
+                                <td>{{ analysis.session_name }}</td>
+                                <td>{{ analysis.analysis_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ analysis.total_comments }}</td>
+                                <td><span class="badge bg-success">{{ analysis.positive_count }}</span></td>
+                                <td><span class="badge bg-warning">{{ analysis.neutral_count }}</span></td>
+                                <td><span class="badge bg-danger">{{ analysis.negative_count }}</span></td>
+                                <td>{{ "%.3f"|format(analysis.avg_sentiment) }}</td>
+                                <td>
+                                    <a href="{{ url_for('export_analysis', analysis_id=analysis.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">Export CSV</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No analysis history found. <a href="{{ url_for('index') }}">Start your first analysis</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

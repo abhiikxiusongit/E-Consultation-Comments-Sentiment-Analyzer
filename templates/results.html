@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Enhanced Results Header with Solid Background -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="analysis-results-header text-center">
+            <h2 class="mb-3">
+                <i class="fas fa-chart-line me-3"></i>
+                Analysis Complete: {{ session_name }}
+            </h2>
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <h5><i class="fas fa-microscope me-2"></i>{{ method }}</h5>
+                    <small>Analysis Method</small>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <h5><i class="fas fa-comments me-2"></i>{{ total_comments }}</h5>
+                    <small>Comments Processed</small>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <h5><i class="fas fa-calculator me-2"></i>{{ avg_sentiment }}</h5>
+                    <small>Average Sentiment</small>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <h5><i class="fas fa-clock me-2"></i>Just Now</h5>
+                    <small>Completed</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-success shadow-lg h-100">
+            <div class="card-body text-center">
+                <div class="text-success mb-3">
+                    <i class="fas fa-smile fa-3x"></i>
+                </div>
+                <h2 class="text-success display-4 fw-bold">{{ sentiment_counts.Positive }}</h2>
+                <h5 class="text-success fw-bold">POSITIVE</h5>
+                <div class="progress mt-3" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ (sentiment_counts.Positive / total_comments * 100)|round }}%"
+                         data-percentage="{{ (sentiment_counts.Positive / total_comments * 100)|round }}">
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">{{ (sentiment_counts.Positive / total_comments * 100)|round }}% of total</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-warning shadow-lg h-100">
+            <div class="card-body text-center">
+                <div class="text-warning mb-3">
+                    <i class="fas fa-meh fa-3x"></i>
+                </div>
+                <h2 class="text-warning display-4 fw-bold">{{ sentiment_counts.Neutral }}</h2>
+                <h5 class="text-warning fw-bold">NEUTRAL</h5>
+                <div class="progress mt-3" style="height: 8px;">
+                    <div class="progress-bar bg-warning" role="progressbar" 
+                         style="width: {{ (sentiment_counts.Neutral / total_comments * 100)|round }}%">
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">{{ (sentiment_counts.Neutral / total_comments * 100)|round }}% of total</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-danger shadow-lg h-100">
+            <div class="card-body text-center">
+                <div class="text-danger mb-3">
+                    <i class="fas fa-frown fa-3x"></i>
+                </div>
+                <h2 class="text-danger display-4 fw-bold">{{ sentiment_counts.Negative }}</h2>
+                <h5 class="text-danger fw-bold">NEGATIVE</h5>
+                <div class="progress mt-3" style="height: 8px;">
+                    <div class="progress-bar bg-danger" role="progressbar" 
+                         style="width: {{ (sentiment_counts.Negative / total_comments * 100)|round }}%">
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">{{ (sentiment_counts.Negative / total_comments * 100)|round }}% of total</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-lg h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Sentiment Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="sentiment-chart"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card shadow-lg h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Sentiment Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Word Cloud Section (Add this after your charts) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cloud me-2"></i>
+                    Word Cloud Analysis
+                </h5>
+                <p class="mb-0 mt-2">Most frequently mentioned words (larger = more frequent)</p>
+            </div>
+            <div class="card-body">
+                <!-- Word Cloud Tabs -->
+                <ul class="nav nav-tabs" id="wordcloudTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overall-tab" data-bs-toggle="tab" 
+                                data-bs-target="#overall-wordcloud" type="button" role="tab">
+                            <i class="fas fa-globe me-1"></i>All Comments
+                        </button>
+                    </li>
+                    {% if positive_wordcloud %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-success" id="positive-tab" data-bs-toggle="tab" 
+                                data-bs-target="#positive-wordcloud" type="button" role="tab">
+                            <i class="fas fa-smile me-1"></i>Positive Only
+                        </button>
+                    </li>
+                    {% endif %}
+                    {% if negative_wordcloud %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-danger" id="negative-tab" data-bs-toggle="tab" 
+                                data-bs-target="#negative-wordcloud" type="button" role="tab">
+                            <i class="fas fa-frown me-1"></i>Negative Only
+                        </button>
+                    </li>
+                    {% endif %}
+                    {% if neutral_wordcloud %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-warning" id="neutral-tab" data-bs-toggle="tab" 
+                                data-bs-target="#neutral-wordcloud" type="button" role="tab">
+                            <i class="fas fa-meh me-1"></i>Neutral Only
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- Word Cloud Content -->
+                <div class="tab-content mt-3" id="wordcloudTabContent">
+                    <!-- Overall Word Cloud -->
+                    <div class="tab-pane fade show active" id="overall-wordcloud" role="tabpanel">
+                        {% if overall_wordcloud %}
+                            <div class="text-center">
+                                <img src="{{ overall_wordcloud }}" class="img-fluid rounded" 
+                                     alt="Overall Word Cloud" style="max-width: 100%; height: auto;">
+                                <p class="text-muted mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Words from all {{ total_comments }} comments combined
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <p>Unable to generate word cloud from the provided comments.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Positive Word Cloud -->
+                    {% if positive_wordcloud %}
+                    <div class="tab-pane fade" id="positive-wordcloud" role="tabpanel">
+                        <div class="text-center">
+                            <img src="{{ positive_wordcloud }}" class="img-fluid rounded" 
+                                 alt="Positive Word Cloud" style="max-width: 100%; height: auto;">
+                            <p class="text-muted mt-2">
+                                <i class="fas fa-smile me-1"></i>
+                                Words from {{ sentiment_counts.Positive }} positive comments only
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Negative Word Cloud -->
+                    {% if negative_wordcloud %}
+                    <div class="tab-pane fade" id="negative-wordcloud" role="tabpanel">
+                        <div class="text-center">
+                            <img src="{{ negative_wordcloud }}" class="img-fluid rounded" 
+                                 alt="Negative Word Cloud" style="max-width: 100%; height: auto;">
+                            <p class="text-muted mt-2">
+                                <i class="fas fa-frown me-1"></i>
+                                Words from {{ sentiment_counts.Negative }} negative comments only
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Neutral Word Cloud -->
+                    {% if neutral_wordcloud %}
+                    <div class="tab-pane fade" id="neutral-wordcloud" role="tabpanel">
+                        <div class="text-center">
+                            <img src="{{ neutral_wordcloud }}" class="img-fluid rounded" 
+                                 alt="Neutral Word Cloud" style="max-width: 100%; height: auto;">
+                            <p class="text-muted mt-2">
+                                <i class="fas fa-meh me-1"></i>
+                                Words from {{ sentiment_counts.Neutral }} neutral comments only
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Action Buttons -->
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf me-1"></i>Export PDF
+            </button>
+            <a href="{{ url_for('history') }}" class="btn btn-outline-info">
+                <i class="fas fa-history me-1"></i>View History
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-success">
+                <i class="fas fa-plus me-1"></i>New Analysis
+            </a>
+            <button type="button" class="btn btn-outline-secondary" onclick="shareResults()">
+                <i class="fas fa-share me-1"></i>Share Results
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Results Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-lg">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>
+                        Detailed Analysis Results
+                    </h5>
+                </div>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-primary" onclick="filterResults('all')">All</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="filterResults('positive')">Positive</button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="filterResults('neutral')">Neutral</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="filterResults('negative')">Negative</button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0" id="resultsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="5%">#</th>
+                                <th width="50%">
+                                    <i class="fas fa-comment me-1"></i>Comment
+                                </th>
+                                <th width="15%">
+                                    <i class="fas fa-heart me-1"></i>Sentiment
+                                </th>
+                                <th width="15%">
+                                    <i class="fas fa-calculator me-1"></i>Score
+                                </th>
+                                <th width="15%">
+                                    <i class="fas fa-percentage me-1"></i>Confidence
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr class="result-row" data-sentiment="{{ result.sentiment.lower() }}">
+                                <td class="fw-bold">{{ loop_index }}</td>
+                                <td>
+                                    <div class="comment-text">
+                                        {{ result.text[:100] }}{% if result.text|length > 100 %}
+                                        <span class="text-muted">...</span>
+                                        <button class="btn btn-link btn-sm p-0 ms-1" onclick="toggleFullComment(this)">
+                                            <i class="fas fa-expand-alt"></i>
+                                        </button>
+                                        <div class="full-comment d-none">{{ result.text }}</div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if result.sentiment == 'Positive' else 'danger' if result.sentiment == 'Negative' else 'warning' }} fs-6">
+                                        <i class="fas fa-{{ 'smile' if result.sentiment == 'Positive' else 'frown' if result.sentiment == 'Negative' else 'meh' }} me-1"></i>
+                                        {{ result.sentiment }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold">{{ result.score }}</span>
+                                        <div class="progress ms-2 flex-grow-1" style="height: 4px;">
+                                            <div class="progress-bar bg-{{ 'success' if result.score > 0 else 'danger' if result.score < 0 else 'warning' }}" 
+                                                 style="width: {{ (result.score|abs * 100)|round }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ (result.confidence * 100)|round }}%</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Render Plotly Chart
+    var chartData = {{ chart_data|safe }};
+    Plotly.newPlot('sentiment-chart', chartData.data, chartData.layout, {responsive: true});
+
+    // Create Chart.js Bar Chart
+    const ctx = document.getElementById('barChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Positive', 'Neutral', 'Negative'],
+            datasets: [{
+                label: 'Number of Comments',
+                data: [{{ sentiment_counts.Positive }}, {{ sentiment_counts.Neutral }}, {{ sentiment_counts.Negative }}],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderColor: ['#059669', '#d97706', '#dc2626'],
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Animate progress bars
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 500);
+        });
+    });
+
+    // Filter results
+    function filterResults(sentiment) {
+        const rows = document.querySelectorAll('.result-row');
+        rows.forEach(row => {
+            if (sentiment === 'all' || row.dataset.sentiment === sentiment) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Toggle full comment
+    function toggleFullComment(button) {
+        const commentDiv = button.closest('.comment-text');
+        const fullComment = commentDiv.querySelector('.full-comment');
+        const icon = button.querySelector('i');
+        
+        if (fullComment.classList.contains('d-none')) {
+            fullComment.classList.remove('d-none');
+            icon.className = 'fas fa-compress-alt';
+        } else {
+            fullComment.classList.add('d-none');
+            icon.className = 'fas fa-expand-alt';
+        }
+    }
+
+    // Export to PDF (placeholder)
+    function exportToPDF() {
+        alert('PDF export feature coming soon!');
+    }
+
+    // Share results (placeholder)
+    function shareResults() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Sentiment Analysis Results',
+                text: 'Check out my sentiment analysis results!',
+                url: window.location.href
+            });
+        } else {
+            // Fallback
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+    }
+</script>
+{% endblock %}

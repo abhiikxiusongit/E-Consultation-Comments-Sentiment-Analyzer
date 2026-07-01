@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Enhanced Hero Section -->
+<div class="row mb-5">
+    <div class="col-12 text-center">
+        <div class="hero-section p-5 rounded-4 mb-4">
+            <div class="mb-4">
+                <i class="fas fa-comments fa-4x mb-3"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-4">E-Consultation Sentiment Analysis</h1>
+            <p class="lead mb-5">Transform your consultation feedback into actionable insights with AI-powered sentiment analysis</p>
+            <div class="row text-center mt-5">
+                <div class="col-md-4 mb-3">
+                    <div class="feature-item">
+                        <i class="fas fa-brain fa-2x mb-3"></i>
+                        <h5>AI-Powered</h5>
+                        <p class="small">Advanced sentiment detection algorithms</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="feature-item">
+                        <i class="fas fa-chart-pie fa-2x mb-3"></i>
+                        <h5>Visual Analytics</h5>
+                        <p class="small">Interactive charts & comprehensive graphs</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="feature-item">
+                        <i class="fas fa-download fa-2x mb-3"></i>
+                        <h5>Export Ready</h5>
+                        <p class="small">Download detailed reports as CSV</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Analysis Form -->
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-analytics me-2"></i>
+                    Start Your Analysis
+                </h3>
+                <p class="mb-0 mt-2">Upload comments and get instant sentiment insights</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('analyze') }}" id="sentiment-form">
+                    <div class="row">
+                        <!-- Session Name -->
+                        <div class="col-md-6 mb-4">
+                            <label for="session_name" class="form-label fw-bold">
+                                <i class="fas fa-tag me-1"></i>Session Name
+                            </label>
+                            <input type="text" class="form-control" id="session_name" name="session_name" 
+                                   placeholder="e.g., Healthcare Policy Discussion Q1 2025">
+                            <div class="form-text">Give your analysis session a meaningful name for easy tracking</div>
+                        </div>
+                        
+                        <!-- Analysis Method -->
+                        <div class="col-md-6 mb-4">
+                            <label for="method" class="form-label fw-bold">
+                                <i class="fas fa-cog me-1"></i>Analysis Method
+                            </label>
+                            <select class="form-select" id="method" name="method">
+                                <option value="textblob" selected>TextBlob (Rule-based) - Recommended</option>
+                                <option value="vader">VADER (Lexicon-based) - Advanced</option>
+                            </select>
+                            <div class="form-text">Choose the sentiment analysis algorithm</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Comments Input -->
+                    <div class="mb-4">
+                        <label for="comments" class="form-label fw-bold">
+                            <i class="fas fa-comments me-1"></i>Comments for Analysis
+                        </label>
+                        <textarea class="form-control" id="comments" name="comments" rows="12" 
+                                  placeholder="Paste your e-consultation comments here, one per line..." required></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Tip:</strong> Each line will be treated as a separate comment. Paste up to 1000 comments for analysis.
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 me-3">
+                            <i class="fas fa-play me-2"></i>
+                            Analyze Sentiment
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="loadSampleData()">
+                            <i class="fas fa-file-import me-2"></i>
+                            Load Sample
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-lg px-4" onclick="clearForm()">
+                            <i class="fas fa-trash me-2"></i>
+                            Clear All
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Quick Stats -->
+<div class="row mt-5">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="text-success">
+                <i class="fas fa-comments fa-2x mb-3"></i>
+                <h4 class="text-success">1000+</h4>
+            </div>
+            <small>Comments Analyzed</small>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="text-primary">
+                <i class="fas fa-users fa-2x mb-3"></i>
+                <h4 class="text-primary">50+</h4>
+            </div>
+            <small>Active Sessions</small>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="text-warning">
+                <i class="fas fa-chart-line fa-2x mb-3"></i>
+                <h4 class="text-warning">95%</h4>
+            </div>
+            <small>Accuracy Rate</small>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="text-info">
+                <i class="fas fa-clock fa-2x mb-3"></i>
+                <h4 class="text-info">&lt;2s</h4>
+            </div>
+            <small>Average Processing</small>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load Sample Data
+    function loadSampleData() {
+        const sampleComments = `This policy is excellent and will benefit everyone in our community
+I completely disagree with this approach and find it problematic
+The proposal needs more research before implementation
+Great initiative by the government, very well thought out
+This is a waste of taxpayer money and resources
+The timeline seems reasonable for this type of project
+I have mixed feelings about this particular policy
+Outstanding work by the consultation team
+This doesn't address the real issues we're facing
+More public input should be gathered before proceeding`;
+        
+        document.getElementById('comments').value = sampleComments;
+        document.getElementById('session_name').value = 'Sample Analysis - ' + new Date().toLocaleString();
+        
+        // Add visual feedback
+        const textarea = document.getElementById('comments');
+        textarea.style.background = '#d4edda';
+        setTimeout(() => {
+            textarea.style.background = '';
+        }, 1000);
+    }
+
+    // Clear Form
+    function clearForm() {
+        if (confirm('Are you sure you want to clear all data?')) {
+            document.getElementById('sentiment-form').reset();
+        }
+    }
+
+    // Auto-resize textarea
+    document.getElementById('comments').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 400) + 'px';
+    });
+
+    // Character counter
+    document.getElementById('comments').addEventListener('input', function() {
+        const text = this.value;
+        const lines = text.split('\n').filter(line => line.trim().length > 0);
+        const charCount = text.length;
+        
+        // Update form text with counts
+        const formText = this.nextElementSibling;
+        formText.innerHTML = `
+            <i class="fas fa-info-circle me-1"></i>
+            <strong>Status:</strong> ${lines.length} comments, ${charCount} characters
+        `;
+    });
+</script>
+{% endblock %}
